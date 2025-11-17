@@ -1,13 +1,30 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-export const testApiKey = async (): Promise<boolean> => {
-  // A new GoogleGenAI instance should be created to ensure the latest key is used.
-  if (!process.env.API_KEY) {
-    throw new Error("API key not found. Please select a key first.");
+/**
+ * Creates a GoogleGenAI client instance.
+ * It prioritizes a manually provided API key, falling back to the
+ * one injected by the environment (e.g., from AI Studio).
+ * @param {string} [apiKey] - An optional, manually provided API key.
+ * @returns {GoogleGenAI} An instance of the GoogleGenAI client.
+ * @throws {Error} If no API key can be found.
+ */
+const getClient = (apiKey?: string): GoogleGenAI => {
+  const keyToUse = apiKey || process.env.API_KEY;
+  if (!keyToUse) {
+    throw new Error("API key not found. Please provide a key manually or select one via AI Studio.");
   }
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  return new GoogleGenAI({ apiKey: keyToUse });
+};
+
+/**
+ * Tests the validity of an API key by making a lightweight call.
+ * @param {string} [apiKey] - The API key to test. If not provided, it uses the environment key.
+ * @returns {Promise<boolean>} A promise that resolves to true if the key is valid.
+ */
+export const testApiKey = async (apiKey?: string): Promise<boolean> => {
   try {
+    const ai = getClient(apiKey);
     // A lightweight call to verify the key is working.
     await ai.models.generateContent({
       model: 'gemini-2.5-flash',
@@ -21,13 +38,14 @@ export const testApiKey = async (): Promise<boolean> => {
   }
 };
 
-export const generateWallpapers = async (prompt: string): Promise<string[]> => {
-  if (!process.env.API_KEY) {
-    // This provides a clear error if the component logic fails to prevent a call without a key.
-    throw new Error("API key not found. Please select a key.");
-  }
-  
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+/**
+ * Generates four 9:16 aspect ratio wallpapers based on a user prompt.
+ * @param {string} prompt - The user's creative prompt.
+ * @param {string} [apiKey] - The API key to use for the request. If not provided, it uses the environment key.
+ * @returns {Promise<string[]>} A promise that resolves to an array of base64-encoded image URLs.
+ */
+export const generateWallpapers = async (prompt: string, apiKey?: string): Promise<string[]> => {
+  const ai = getClient(apiKey);
   
   try {
     const response = await ai.models.generateImages({
