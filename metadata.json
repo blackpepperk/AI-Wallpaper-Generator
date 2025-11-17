@@ -1,0 +1,5 @@
+{
+  "name": "AI 배경화면 생성기 (AI Wallpaper Generator)",
+  "description": "원하는 분위기를 텍스트로 입력하여 당신만의 독특한 휴대폰 배경화면을 생성하세요. AI가 9:16 비율의 아름다운 이미지 4개를 만들어 드립니다.",
+  "requestFramePermissions": []
+}
