@@ -1,9 +1,30 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+export const testApiKey = async (): Promise<boolean> => {
+  // A new GoogleGenAI instance should be created to ensure the latest key is used.
+  if (!process.env.API_KEY) {
+    throw new Error("API key not found. Please select a key first.");
+  }
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  try {
+    // A lightweight call to verify the key is working.
+    await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: 'hello',
+    });
+    return true;
+  } catch (error) {
+    console.error("API key test failed:", error);
+    // Re-throw the original error so it can be handled by the UI component.
+    throw error;
+  }
+};
+
 export const generateWallpapers = async (prompt: string): Promise<string[]> => {
   if (!process.env.API_KEY) {
-    throw new Error("API_KEY is not set in environment variables.");
+    // This provides a clear error if the component logic fails to prevent a call without a key.
+    throw new Error("API key not found. Please select a key.");
   }
   
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -26,6 +47,7 @@ export const generateWallpapers = async (prompt: string): Promise<string[]> => {
     }
   } catch (error) {
     console.error("Error generating images:", error);
-    throw new Error("이미지 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    // Re-throw the original error so it can be handled by the UI component.
+    throw error;
   }
 };
